@@ -18,4 +18,6 @@ public record ServiceRequestCreateDto(
         @NotBlank
         @Size(min = 5, max = 200)
         String address
-) {}
+)
+{}
+
