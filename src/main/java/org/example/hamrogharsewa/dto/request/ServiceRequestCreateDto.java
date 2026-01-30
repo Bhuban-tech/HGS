@@ -2,20 +2,28 @@ package org.example.hamrogharsewa.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record ServiceRequestCreateDto(
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class ServiceRequestCreateDto {
 
         @NotBlank
-        String serviceProviderId,
+        private String serviceProviderId;
 
         @NotBlank
-        String serviceCategoryId,
+        private String serviceCategoryId;
 
         @NotBlank
         @Size(min = 10, max = 500)
-        String description,
+        private String description;
 
         @NotBlank
         @Size(min = 5, max = 200)
-        String address
-) {}
+        private String address;
+}

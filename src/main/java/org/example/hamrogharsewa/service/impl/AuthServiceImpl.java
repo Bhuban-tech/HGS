@@ -1,4 +1,4 @@
-package org.example.hamrogharsewa.service.Impl;
+package org.example.hamrogharsewa.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.request.LoginRequestDto;
@@ -21,7 +21,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import tools.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.Duration;
 
@@ -58,8 +58,7 @@ public class AuthServiceImpl implements AuthService {
         emailService.sendSimpleEmail(
                 dto.getEmail(),
                 "OTP for Registration",
-                "Your OTP is: " + otp + "\nValid for 10 minutes."
-        );
+                "Your OTP is: " + otp + "\nValid for 10 minutes.");
     }
 
     @Override
@@ -71,8 +70,7 @@ public class AuthServiceImpl implements AuthService {
 
         try {
             String json = otpStore.getRegistrationData(email);
-            UserRegistrationDto dto =
-                    objectMapper.readValue(json, UserRegistrationDto.class);
+            UserRegistrationDto dto = objectMapper.readValue(json, UserRegistrationDto.class);
 
             User user = User.builder()
                     .userName(dto.getUserName())
@@ -99,9 +97,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getEmail(), request.getPassword()
-                    )
-            );
+                            request.getEmail(), request.getPassword()));
         } catch (AuthenticationException e) {
             throw new UnauthorizedException("Invalid credentials");
         }
@@ -117,13 +113,11 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getEmail(),
                 user.getUserName(),
-                user.getRole().name()
-        );
+                user.getRole().name());
 
         return new LoginResponseDto(
                 token, user.getId(), user.getUserName(),
-                user.getEmail(), user.getRole()
-        );
+                user.getEmail(), user.getRole());
     }
 
     @Override
@@ -159,12 +153,10 @@ public class AuthServiceImpl implements AuthService {
                 user.getId(),
                 user.getEmail(),
                 user.getUserName(),
-                user.getRole().name()
-        );
+                user.getRole().name());
 
         return new LoginResponseDto(
                 newToken, user.getId(),
-                user.getUserName(), user.getEmail(), user.getRole()
-        );
+                user.getUserName(), user.getEmail(), user.getRole());
     }
 }

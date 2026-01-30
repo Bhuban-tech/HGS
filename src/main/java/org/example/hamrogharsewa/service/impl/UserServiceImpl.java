@@ -1,4 +1,4 @@
-package org.example.hamrogharsewa.service.Impl;
+package org.example.hamrogharsewa.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,9 +31,11 @@ public class UserServiceImpl implements UserService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
 
-    /* =========================
-       AUTH UTILITY
-       ========================= */
+    /*
+     * =========================
+     * AUTH UTILITY
+     * =========================
+     */
     private String getCurrentEmailFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
@@ -52,9 +54,11 @@ public class UserServiceImpl implements UserService {
         throw new UnauthorizedException("Invalid authentication principal");
     }
 
-    /* =========================
-       USER PROFILE
-       ========================= */
+    /*
+     * =========================
+     * USER PROFILE
+     * =========================
+     */
     @Override
     public UserResponseDto getCurrentUser() {
         String email = getCurrentEmailFromToken();
@@ -81,9 +85,11 @@ public class UserServiceImpl implements UserService {
         return mapToDto(userRepository.save(user));
     }
 
-    /* =========================
-       PASSWORD CHANGE (LOGGED IN)
-       ========================= */
+    /*
+     * =========================
+     * PASSWORD CHANGE (LOGGED IN)
+     * =========================
+     */
     @Override
     @Transactional
     public void changePassword(String oldPassword, String newPassword) {
@@ -99,9 +105,11 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
     }
 
-    /* =========================
-       FORGOT PASSWORD FLOW
-       ========================= */
+    /*
+     * =========================
+     * FORGOT PASSWORD FLOW
+     * =========================
+     */
     @Override
     public void forgotPassword(String email) {
         User user = userRepository.findByEmail(email)
@@ -111,12 +119,11 @@ public class UserServiceImpl implements UserService {
         otpStore.saveOtp(email, otp);
 
         String subject = "Password Reset OTP - HamroGharSewa";
-        String message =
-                "Hello " + user.getUserName() + ",\n\n" +
-                        "Your OTP for password reset is:\n\n" +
-                        otp + "\n\n" +
-                        "This OTP is valid for 10 minutes.\n\n" +
-                        "Regards,\nHamroGharSewa Team";
+        String message = "Hello " + user.getUserName() + ",\n\n" +
+                "Your OTP for password reset is:\n\n" +
+                otp + "\n\n" +
+                "This OTP is valid for 10 minutes.\n\n" +
+                "Regards,\nHamroGharSewa Team";
 
         try {
             emailService.sendSimpleEmail(email, subject, message);
@@ -156,9 +163,21 @@ public class UserServiceImpl implements UserService {
         otpStore.invalidateOtpVerified(email);
     }
 
-    /* =========================
-       DTO MAPPER
-       ========================= */
+    @Override
+    public java.util.List<UserResponseDto> getProvidersByCategory(String categoryId) {
+        return userRepository
+                .findByServiceCategoryIdAndRoleAndActiveTrue(categoryId,
+                        org.example.hamrogharsewa.model.Role.SERVICE_PROVIDER)
+                .stream()
+                .map(this::mapToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /*
+     * =========================
+     * DTO MAPPER
+     * =========================
+     */
     private UserResponseDto mapToDto(User user) {
         return new UserResponseDto(
                 user.getId(),
@@ -167,7 +186,6 @@ public class UserServiceImpl implements UserService {
                 user.getPhoneNumber(),
                 user.getProfile(),
                 user.getRole() != null ? user.getRole().name() : null,
-                user.isActive()
-        );
+                user.isActive());
     }
 }

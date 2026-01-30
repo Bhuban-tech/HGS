@@ -31,6 +31,14 @@ public class User {
 
     private String phoneNumber;
     private String profile;
+    private String address;
+
+    // Provider specific fields
+    private String citizenshipNumber;
+    private String citizenshipFront;
+    private String citizenshipBack;
+    private Integer experienceYears;
+    private String description; // For skills/description
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

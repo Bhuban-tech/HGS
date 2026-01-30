@@ -1,4 +1,4 @@
-package org.example.hamrogharsewa.service.Impl;
+package org.example.hamrogharsewa.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;

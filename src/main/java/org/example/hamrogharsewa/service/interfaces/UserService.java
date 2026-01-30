@@ -16,4 +16,6 @@ public interface UserService {
     boolean verifyOtp(String email, String otp);
 
     void resetPassword(String email, String newPassword);
+
+    java.util.List<UserResponseDto> getProvidersByCategory(String categoryId);
 }

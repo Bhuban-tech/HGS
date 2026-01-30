@@ -1,4 +1,4 @@
-package org.example.hamrogharsewa.service.Impl;
+package org.example.hamrogharsewa.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.request.ServiceCategoryRequestDto;
@@ -25,27 +25,27 @@ public class CategoryServiceImpl implements CategoryService {
         category.setIcon(dto.icon());
         category.setActive(true);
 
-        return toDto(repository.save(category));
+        return mapToDto(repository.save(category));
     }
 
     @Override
     public ServiceCategoryResponseDto update(String id, ServiceCategoryRequestDto dto) {
         ServiceCategory category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
         category.setName(dto.name());
         category.setDescription(dto.description());
         category.setIcon(dto.icon());
 
-        return toDto(repository.save(category));
+        return mapToDto(repository.save(category));
     }
 
     @Override
     public void delete(String id) {
         ServiceCategory category = repository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        category.setActive(false);
+        category.setActive(false); // soft delete
         repository.save(category);
     }
 
@@ -53,11 +53,12 @@ public class CategoryServiceImpl implements CategoryService {
     public List<ServiceCategoryResponseDto> getAllActive() {
         return repository.findByActiveTrue()
                 .stream()
-                .map(this::toDto)
+                .map(this::mapToDto)
                 .toList();
     }
 
-    private ServiceCategoryResponseDto toDto(ServiceCategory category) {
+    // 🔁 DTO Mapper (PRIVATE)
+    private ServiceCategoryResponseDto mapToDto(ServiceCategory category) {
         return ServiceCategoryResponseDto.builder()
                 .id(category.getId())
                 .name(category.getName())

@@ -10,68 +10,69 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/service-requests")
+    // --- PROFILE ENDPOINTS ---
+
+    @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> getCurrentUser() {
-        UserResponseDto user = userService.getCurrentUser();
-        return ResponseEntity.ok(
-                ApiResponseDto.success("Booking Created Successfully", user)
-        );
+        return ResponseEntity.ok(ApiResponseDto.success("Profile fetched", userService.getCurrentUser()));
     }
 
-    @PutMapping("/service-requests/{id}/cancel ")
+    @PutMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> updateProfile(
-            @Valid @RequestBody UserRegistrationDto dto
-    ) {
-        UserResponseDto updatedUser = userService.updateUserProfile(dto);
-        return ResponseEntity.ok(
-                ApiResponseDto.success("cancle ", updatedUser)
-        );
+            @Valid @RequestBody UserRegistrationDto dto) {
+        return ResponseEntity.ok(ApiResponseDto.success("Profile updated", userService.updateUserProfile(dto)));
     }
 
-    @PatchMapping("/service-requests/{id}/complete")
+    @PatchMapping("/change-password")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDto<Void>> changePassword(
             @RequestParam String oldPassword,
-            @RequestParam String newPassword
-    ) {
+            @RequestParam String newPassword) {
         userService.changePassword(oldPassword, newPassword);
-        return ResponseEntity.ok(ApiResponseDto.success("mark as a complete"));
+        return ResponseEntity.ok(ApiResponseDto.success("Password changed successfully", null));
     }
 
+    // --- BROWSE PROVIDERS ---
 
-    @PostMapping("/service-requests/my-requests")
-    public ResponseEntity<ApiResponseDto<Void>> forgotPassword(
-            @RequestParam String email
-    ) {
+    @GetMapping("/providers/category/{categoryId}")
+    public ResponseEntity<ApiResponseDto<List<UserResponseDto>>> getProvidersByCategory(
+            @PathVariable String categoryId) {
+        return ResponseEntity
+                .ok(ApiResponseDto.success("Providers fetched", userService.getProvidersByCategory(categoryId)));
+    }
+
+    // --- FORGOT PASSWORD (PUBLIC) ---
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponseDto<Void>> forgotPassword(@RequestParam String email) {
         userService.forgotPassword(email);
-        return ResponseEntity.ok(ApiResponseDto.success("view  my booking "));
+        return ResponseEntity.ok(ApiResponseDto.success("OTP sent to email", null));
     }
 
-    @PostMapping("/chat/send ")
+    @PostMapping("/verify-otp")
     public ResponseEntity<ApiResponseDto<Void>> verifyOtp(
             @RequestParam String email,
-            @RequestParam String otp
-    ) {
+            @RequestParam String otp) {
         userService.verifyOtp(email, otp);
-        return ResponseEntity.ok(ApiResponseDto.success("message send  successfully"));
+        return ResponseEntity.ok(ApiResponseDto.success("OTP verified", null));
     }
 
-    @PostMapping("/chat/{requestId}")
+    @PostMapping("/reset-password")
     public ResponseEntity<ApiResponseDto<Void>> resetPassword(
             @RequestParam String email,
-            @RequestParam String newPassword
-    ) {
+            @RequestParam String newPassword) {
         userService.resetPassword(email, newPassword);
-        return ResponseEntity.ok(ApiResponseDto.success("get message successfully"));
+        return ResponseEntity.ok(ApiResponseDto.success("Password reset successfully", null));
     }
 }

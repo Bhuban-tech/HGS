@@ -1,4 +1,6 @@
-package org.example.hamrogharsewa.service.Impl;
+// ✅ CORRECT
+package org.example.hamrogharsewa.service.impl;
+
 
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.request.ServiceRequestCreateDto;
@@ -28,10 +30,10 @@ public class ServiceProviderImpl implements ServiceRequestService {
 
         ServiceRequest request = ServiceRequest.builder()
                 .userId(userId)
-                .serviceProviderId(dto.serviceProviderId())
-                .serviceCategoryId(dto.serviceCategoryId())
-                .description(dto.description())
-                .address(dto.address())
+                .serviceProviderId(dto.getServiceProviderId())
+                .serviceCategoryId(dto.getServiceCategoryId())
+                .description(dto.getDescription())
+                .address(dto.getAddress())
                 .status(RequestStatus.PENDING)
                 .build();
 
@@ -99,7 +101,7 @@ public class ServiceProviderImpl implements ServiceRequestService {
 
     @Override
     public void complete(String actorId, String requestId,
-                         Collection<? extends GrantedAuthority> authorities) {
+            Collection<? extends GrantedAuthority> authorities) {
 
         ServiceRequest req = get(requestId);
 
