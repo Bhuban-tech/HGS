@@ -69,12 +69,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                email,
+                                userId, // Use userId as principal for internal consistency (UUID)
                                 null,
                                 List.of(new SimpleGrantedAuthority(role))
                         );
 
-                authentication.setDetails(userId);
+                authentication.setDetails(email); // Keep email in details if needed
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
 

@@ -20,9 +20,9 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public ServiceCategoryResponseDto create(ServiceCategoryRequestDto dto) {
         ServiceCategory category = new ServiceCategory();
-        category.setName(dto.name());
-        category.setDescription(dto.description());
-        category.setIcon(dto.icon());
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+        category.setIcon(dto.getIcon());
         category.setActive(true);
 
         return mapToDto(repository.save(category));
@@ -33,9 +33,9 @@ public class CategoryServiceImpl implements CategoryService {
         ServiceCategory category = repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        category.setName(dto.name());
-        category.setDescription(dto.description());
-        category.setIcon(dto.icon());
+        category.setName(dto.getName());
+        category.setDescription(dto.getDescription());
+        category.setIcon(dto.getIcon());
 
         return mapToDto(repository.save(category));
     }

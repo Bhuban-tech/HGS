@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
      * AUTH UTILITY
      * =========================
      */
-    private String getCurrentEmailFromToken() {
+    private String getCurrentUserIdFromToken() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -45,9 +45,8 @@ public class UserServiceImpl implements UserService {
 
         Object principal = authentication.getPrincipal();
 
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails) {
-            return ((org.springframework.security.core.userdetails.UserDetails) principal).getUsername();
-        } else if (principal instanceof String) {
+        // Since we changed JwtAuthenticationFilter to use userId as principal
+        if (principal instanceof String) {
             return principal.toString();
         }
 
@@ -61,8 +60,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public UserResponseDto getCurrentUser() {
-        String email = getCurrentEmailFromToken();
-        User user = userRepository.findByEmail(email)
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return mapToDto(user);
     }
@@ -70,8 +69,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserResponseDto updateUserProfile(UserRegistrationDto updatedInfo) {
-        String email = getCurrentEmailFromToken();
-        User user = userRepository.findByEmail(email)
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (updatedInfo.getUserName() != null) {
@@ -93,8 +92,8 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void changePassword(String oldPassword, String newPassword) {
-        String email = getCurrentEmailFromToken();
-        User user = userRepository.findByEmail(email)
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {

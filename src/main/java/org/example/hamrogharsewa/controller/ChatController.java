@@ -9,7 +9,6 @@ import org.example.hamrogharsewa.service.interfaces.ChatService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,14 +23,14 @@ public class ChatController {
 
     @PostMapping("/send")
     public ResponseEntity<ApiResponseDto<Void>> sendMessage(
-            @AuthenticationPrincipal UserDetails user,
+            @AuthenticationPrincipal String userId,
             @Valid @RequestBody SendMessageRequest request) {
 
         chatService.sendMessage(
-                user.getUsername(),
-                request.requestId(),
-                request.message(),
-                request.receiverId()
+                userId,
+                request.getRequestId(),
+                request.getMessage(),
+                request.getReceiverId()
         );
 
         return ResponseEntity.ok(ApiResponseDto.success("Message sent", null));
@@ -39,13 +38,13 @@ public class ChatController {
 
     @GetMapping("/{requestId}")
     public ResponseEntity<ApiResponseDto<List<ChatMessageDto>>> getChat(
-            @AuthenticationPrincipal UserDetails user,
+            @AuthenticationPrincipal String userId,
             @PathVariable String requestId) {
 
         List<ChatMessageDto> messages =
-                chatService.getChatHistory(requestId, user.getUsername());
+                chatService.getChatHistory(requestId, userId);
 
-        chatService.markAsRead(requestId, user.getUsername());
+        chatService.markAsRead(requestId, userId);
 
         return ResponseEntity.ok(
                 ApiResponseDto.success("Chat history", messages)
@@ -54,13 +53,13 @@ public class ChatController {
 
     @GetMapping("/{requestId}/unread-count")
     public ResponseEntity<ApiResponseDto<Long>> unreadCount(
-            @AuthenticationPrincipal UserDetails user,
+            @AuthenticationPrincipal String userId,
             @PathVariable String requestId) {
 
         return ResponseEntity.ok(
                 ApiResponseDto.success(
                         "Unread count",
-                        chatService.getUnreadCount(requestId, user.getUsername())
+                        chatService.getUnreadCount(requestId, userId)
                 )
         );
     }

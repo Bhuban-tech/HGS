@@ -1,9 +1,18 @@
 package org.example.hamrogharsewa.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-public record SendMessageRequest(
-        @NotBlank String requestId,
-        @NotBlank String message,
-        @NotBlank String receiverId
-) {}
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class SendMessageRequest {
+    @NotBlank
+    private String requestId;
+    @NotBlank
+    private String message;
+    @NotBlank
+    private String receiverId;
+}

@@ -10,6 +10,7 @@ import org.example.hamrogharsewa.model.ServiceRequest;
 import org.example.hamrogharsewa.repository.ChatRepository;
 import org.example.hamrogharsewa.repository.ServiceRequestRepository;
 import org.example.hamrogharsewa.service.interfaces.ChatService;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ChatServiceImpl implements ChatService {
 
     private final ChatRepository chatRepository;
     private final ServiceRequestRepository requestRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Override
     public void sendMessage(String senderId, String requestId, String message, String receiverId) {
@@ -40,7 +42,14 @@ public class ChatServiceImpl implements ChatService {
                 .message(message)
                 .build();
 
-        chatRepository.save(chat);
+        ChatMessage saved = chatRepository.save(chat);
+
+        // Push real-time notification
+        messagingTemplate.convertAndSendToUser(
+                receiverId,
+                "/queue/messages",
+                map(saved)
+        );
     }
 
     @Override

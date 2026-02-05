@@ -23,18 +23,11 @@ public class MessageController {
      */
     @MessageMapping("/chat.send")
     public void processMessage(@Payload SendMessageRequest chatMessage, Principal principal) {
-        // 1. Save message to database
+        // ChatService now handles both saving to DB and pushing real-time notifications
         chatService.sendMessage(
                 principal.getName(), // sender email/id
-                chatMessage.requestId(),
-                chatMessage.message(),
-                chatMessage.receiverId());
-
-        // 2. Push message to the receiver's private queue
-        // Receiver should subscribe to /user/queue/messages
-        messagingTemplate.convertAndSendToUser(
-                chatMessage.receiverId(),
-                "/queue/messages",
-                chatMessage);
+                chatMessage.getRequestId(),
+                chatMessage.getMessage(),
+                chatMessage.getReceiverId());
     }
 }
