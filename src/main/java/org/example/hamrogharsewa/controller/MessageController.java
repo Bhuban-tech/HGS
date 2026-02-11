@@ -17,13 +17,9 @@ public class MessageController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatService chatService;
 
-    /**
-     * Handles real-time chat messages sent via WebSocket.
-     * Destination: /app/chat.send
-     */
     @MessageMapping("/chat.send")
     public void processMessage(@Payload SendMessageRequest chatMessage, Principal principal) {
-        // ChatService now handles both saving to DB and pushing real-time notifications
+
         chatService.sendMessage(
                 principal.getName(), // sender email/id
                 chatMessage.getRequestId(),

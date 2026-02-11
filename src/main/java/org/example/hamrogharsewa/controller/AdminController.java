@@ -70,7 +70,7 @@ public class AdminController {
         return ResponseEntity.ok(new ApiResponseDto<>(true, "User deactivated", null));
     }
 
-    // ---------------- CATEGORIES ----------------
+
 
     @PostMapping("/categories")
     public ResponseEntity<ApiResponseDto<ServiceCategoryResponseDto>> createCategory(
