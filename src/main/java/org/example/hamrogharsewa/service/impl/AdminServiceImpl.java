@@ -1,5 +1,6 @@
 package org.example.hamrogharsewa.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;
 import org.example.hamrogharsewa.exception.ResourceNotFoundException;
@@ -25,10 +26,12 @@ public class AdminServiceImpl implements AdminService {
                 .collect(Collectors.toList());
     }
 
+    // In AdminServiceImpl.getAllProviders() — add this temporarily
     @Override
     public List<UserResponseDto> getAllProviders() {
-        return userRepository.findByRole(Role.SERVICE_PROVIDER).stream()
-                .map(this::mapToDto)
+        return userRepository.findByRole(Role.SERVICE_PROVIDER)
+                .stream()
+                .map(UserResponseDto::from) // ✅ use from() directly
                 .collect(Collectors.toList());
     }
 
@@ -73,16 +76,15 @@ public class AdminServiceImpl implements AdminService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
     }
-
+    // In AdminServiceImpl.java — find mapToDto and replace entirely with:
     private UserResponseDto mapToDto(User user) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .userName(user.getUserName())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .role(user.getRole() != null ? user.getRole().name() : null)
-                .active(user.isActive())
-                // .createdAt(user.getCreatedAt())
-                .build();
+        return UserResponseDto.from(user); // ✅ uses the updated from() method
+    }
+    @Override
+    @Transactional
+    public void removeProvider(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found"));
+        userRepository.delete(user);
     }
 }

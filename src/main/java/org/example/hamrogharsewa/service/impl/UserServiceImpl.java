@@ -3,11 +3,9 @@ package org.example.hamrogharsewa.service.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.hamrogharsewa.dto.request.UserRegistrationDto;
+import org.example.hamrogharsewa.dto.response.UpdateProfileDto;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;
-import org.example.hamrogharsewa.exception.EmailSendingException;
-import org.example.hamrogharsewa.exception.OtpNotVerifiedException;
-import org.example.hamrogharsewa.exception.ResourceNotFoundException;
-import org.example.hamrogharsewa.exception.UnauthorizedException;
+import org.example.hamrogharsewa.exception.*;
 import org.example.hamrogharsewa.model.User;
 import org.example.hamrogharsewa.repository.UserRepository;
 import org.example.hamrogharsewa.service.EmailService;
@@ -19,6 +17,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +54,14 @@ public class UserServiceImpl implements UserService {
         throw new UnauthorizedException("Invalid authentication principal");
     }
 
+    @Override
+    public List<UserResponseDto> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(this::mapToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     /*
      * =========================
      * USER PROFILE
@@ -68,7 +77,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserResponseDto updateUserProfile(UserRegistrationDto updatedInfo) {
+    public UserResponseDto updateUserProfile(UpdateProfileDto updatedInfo) {
         String userId = getCurrentUserIdFromToken();
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
@@ -76,7 +85,6 @@ public class UserServiceImpl implements UserService {
         if (updatedInfo.getUserName() != null) {
             user.setUserName(updatedInfo.getUserName());
         }
-
         if (updatedInfo.getPhoneNumber() != null) {
             user.setPhoneNumber(updatedInfo.getPhoneNumber());
         }
@@ -185,6 +193,49 @@ public class UserServiceImpl implements UserService {
                 user.getPhoneNumber(),
                 user.getProfile(),
                 user.getRole() != null ? user.getRole().name() : null,
-                user.isActive());
+                user.isActive(),
+                user.getServiceCategoryId() // ✅ add this
+        );
+    }
+
+    @Override
+    public void requestEmailChange(String newEmail) {
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (userRepository.existsByEmail(newEmail)) {
+            throw new BadRequestException("Email already in use");
+        }
+
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+        otpStore.saveEmailChangeOtp(newEmail, otp); // ✅ use new method with correct key
+
+        emailService.sendSimpleEmail(
+                newEmail,
+                "Email Change OTP - HamroGharSewa",
+                "Hello " + user.getUserName() + ",\n\n" +
+                        "Your OTP to confirm email change is: " + otp +
+                        "\n\nValid for 10 minutes.\n\nRegards,\nHamroGharSewa Team"
+        );
+    }
+
+    @Override
+    @Transactional
+    public void confirmEmailChange(String newEmail, String otp) {
+        String storedOtp = otpStore.getOtp(newEmail);
+
+        if (storedOtp == null || !storedOtp.equals(otp)) {
+            throw new RuntimeException("Invalid or expired OTP");
+        }
+
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setEmail(newEmail);
+        userRepository.save(user);
+        otpStore.invalidateOtp(newEmail);
     }
 }

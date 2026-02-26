@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-
 @Entity
 @Table(name = "users")
 @Getter
@@ -33,17 +32,17 @@ public class User {
     private String profile;
     private String address;
 
-    // Provider specific fields
     private String citizenshipNumber;
     private String citizenshipFront;
     private String citizenshipBack;
     private Integer experienceYears;
-    private String description; // For skills/description
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    @Column(name = "serviceCategoryId") // ✅ fix
     private String serviceCategoryId;
 
     private boolean active = true;

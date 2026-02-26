@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.request.UserRegistrationDto;
 import org.example.hamrogharsewa.dto.response.ApiResponseDto;
+import org.example.hamrogharsewa.dto.response.UpdateProfileDto;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;
 import org.example.hamrogharsewa.service.interfaces.UserService;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +31,7 @@ public class UserController {
     @PutMapping("/profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> updateProfile(
-            @Valid @RequestBody UserRegistrationDto dto) {
+            @RequestBody UpdateProfileDto dto) {
         return ResponseEntity.ok(ApiResponseDto.success("Profile updated", userService.updateUserProfile(dto)));
     }
 
@@ -68,11 +69,32 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success("OTP verified", null));
     }
 
+    @GetMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponseDto<List<UserResponseDto>>> getAllUsers() {
+        return ResponseEntity.ok(ApiResponseDto.success("Users fetched", userService.getAllUsers()));
+    }
+
     @PostMapping("/reset-password")
     public ResponseEntity<ApiResponseDto<Void>> resetPassword(
             @RequestParam String email,
             @RequestParam String newPassword) {
         userService.resetPassword(email, newPassword);
         return ResponseEntity.ok(ApiResponseDto.success("Password reset successfully", null));
+    }
+    @PostMapping("/request-email-change")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponseDto<Void>> requestEmailChange(@RequestParam String newEmail) {
+        userService.requestEmailChange(newEmail);
+        return ResponseEntity.ok(ApiResponseDto.success("OTP sent to new email", null));
+    }
+
+    @PostMapping("/confirm-email-change")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponseDto<Void>> confirmEmailChange(
+            @RequestParam String newEmail,
+            @RequestParam String otp) {
+        userService.confirmEmailChange(newEmail, otp);
+        return ResponseEntity.ok(ApiResponseDto.success("Email updated successfully", null));
     }
 }

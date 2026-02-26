@@ -1,5 +1,6 @@
 package org.example.hamrogharsewa.service.impl;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.request.ServiceCategoryRequestDto;
 import org.example.hamrogharsewa.dto.response.ServiceCategoryResponseDto;
@@ -40,13 +41,14 @@ public class CategoryServiceImpl implements CategoryService {
         return mapToDto(repository.save(category));
     }
 
+    // In your CategoryService implementation
     @Override
+    @Transactional
     public void delete(String id) {
-        ServiceCategory category = repository.findById(id)
+        ServiceCategory category = repository.findById(id)  // ✅ repository not categoryRepository
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + id));
 
-        category.setActive(false); // soft delete
-        repository.save(category);
+        repository.delete(category); // ✅ repository not categoryRepository
     }
 
     @Override

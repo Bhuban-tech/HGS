@@ -19,4 +19,6 @@ public interface AdminService {
     void activateUser(String id);
 
     void deactivateUser(String id);
+
+    void removeProvider(String id);
 }

@@ -96,4 +96,9 @@ public class AdminController {
         categoryService.delete(id);
         return ResponseEntity.ok(new ApiResponseDto<>(true, "Category deactivated", null));
     }
+    @DeleteMapping("/providers/{id}")
+    public ResponseEntity<ApiResponseDto<Void>> removeProvider(@PathVariable String id) {
+        adminService.removeProvider(id);
+        return ResponseEntity.ok(new ApiResponseDto<>(true, "Provider removed", null));
+    }
 }
