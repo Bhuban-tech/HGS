@@ -20,13 +20,16 @@ public class UserRegistrationDto {
 
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters")
-    @Pattern(
-            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-{}\\[\\]().,<>/?]).+$",
-            message = "Password must include uppercase, lowercase, number, and special character"
-    )
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-{}\\[\\]().,<>/?]).+$", message = "Password must include uppercase, lowercase, number, and special character")
     private String password;
 
     @Pattern(regexp = "^\\d{10}$", message = "Phone number must be exactly 10 digits")
     private String phoneNumber;
+
+    private String role;
+
+    private String address;
+    private String category;
+    private String experience;
 
 }

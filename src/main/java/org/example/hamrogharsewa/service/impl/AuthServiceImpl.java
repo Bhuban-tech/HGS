@@ -62,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserResponseDto verifyOtpAndSaveUser(String email, String otp) {
+    public LoginResponseDto verifyOtpAndSaveUser(String email, String otp) {
         String savedOtp = otpStore.getOtp(email);
         if (savedOtp == null || !savedOtp.equals(otp)) {
             throw new BadRequestException("Invalid or expired OTP");
@@ -72,20 +72,45 @@ public class AuthServiceImpl implements AuthService {
             String json = otpStore.getRegistrationData(email);
             UserRegistrationDto dto = objectMapper.readValue(json, UserRegistrationDto.class);
 
+            Role assignedRole = Role.USER;
+            if (dto.getRole() != null) {
+                if (dto.getRole().equalsIgnoreCase("PROVIDER") || dto.getRole().equalsIgnoreCase("SERVICE_PROVIDER")) {
+                    assignedRole = Role.SERVICE_PROVIDER;
+                }
+            }
+
+            Integer expYears = null;
+            if (dto.getExperience() != null && !dto.getExperience().trim().isEmpty()) {
+                try {
+                    expYears = Integer.parseInt(dto.getExperience().trim());
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
             User user = User.builder()
                     .userName(dto.getUserName())
                     .email(dto.getEmail())
                     .password(passwordEncoder.encode(dto.getPassword()))
                     .phoneNumber(dto.getPhoneNumber())
-                    .role(Role.USER)
+                    .role(assignedRole)
+                    .address(dto.getAddress())
+                    .experienceYears(expYears)
+                    .serviceCategoryId(dto.getCategory())
                     .active(true)
-                    .serviceCategoryId(null)
                     .build();
 
             userRepository.save(user);
             otpStore.invalidateRegistration(email);
 
-            return UserResponseDto.from(user);
+            String token = jwtUtil.generateToken(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUserName(),
+                    user.getRole().name());
+
+            return new LoginResponseDto(
+                    token, user.getId(), user.getUserName(),
+                    user.getEmail(), user.getRole());
 
         } catch (Exception e) {
             throw new RuntimeException("Registration failed", e);

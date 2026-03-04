@@ -25,6 +25,9 @@ public class HamrogharsewaApplication {
         @Autowired
         private UserRepository userRepository;
 
+        @Autowired
+        private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
         @Value("${superadmin.email}")
         private String email;
 
@@ -46,8 +49,17 @@ public class HamrogharsewaApplication {
                     User newUser = new User();
                     newUser.setEmail(email);
                     newUser.setUserName(username);
-                    newUser.setPassword(password);
+
+                    // If the password looks like a BCrypt hash, save it directly
+                    if (password.startsWith("$2a$") || password.startsWith("$2b$")) {
+                        newUser.setPassword(password);
+                    } else {
+                        newUser.setPassword(passwordEncoder.encode(password));
+                    }
+
                     newUser.setRole(Role.SUPERADMIN);
+                    newUser.setActive(true);
+                    newUser.setApproved(true);
 
                     userRepository.save(newUser);
                     System.out.println("SUPERADMIN created successfully.");

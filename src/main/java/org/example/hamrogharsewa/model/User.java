@@ -38,7 +38,7 @@ public class User {
     private String citizenshipFront;
     private String citizenshipBack;
     private Integer experienceYears;
-    private String description; // For skills/description
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -55,9 +55,7 @@ public class User {
     @PrePersist
     void onCreate() {
         createdAt = updatedAt = LocalDateTime.now();
-        if (role == Role.USER || role == Role.SUPERADMIN) {
-            approved = true;
-        }
+        approved = true;
     }
 
     @PreUpdate

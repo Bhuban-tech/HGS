@@ -34,7 +34,7 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<UserResponseDto> getPendingProviders() {
-        return userRepository.findByRoleAndActiveFalse(Role.SERVICE_PROVIDER).stream()
+        return userRepository.findByRoleAndApprovedFalse(Role.SERVICE_PROVIDER).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
@@ -43,6 +43,7 @@ public class AdminServiceImpl implements AdminService {
     public void approveProvider(String id) {
         User user = getUser(id);
         user.setActive(true);
+        user.setApproved(true);
         userRepository.save(user);
     }
 
@@ -50,6 +51,7 @@ public class AdminServiceImpl implements AdminService {
     public void rejectProvider(String id) {
         User user = getUser(id);
         user.setActive(false);
+        user.setApproved(false); // Ensure it's not approved if rejected
         userRepository.save(user);
     }
 
@@ -75,14 +77,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private UserResponseDto mapToDto(User user) {
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .userName(user.getUserName())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .role(user.getRole() != null ? user.getRole().name() : null)
-                .active(user.isActive())
-                // .createdAt(user.getCreatedAt())
-                .build();
+        return UserResponseDto.from(user); // Use the static 'from' method which now includes all fields
     }
 }

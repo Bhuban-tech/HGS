@@ -28,8 +28,8 @@ public class ChatServiceImpl implements ChatService {
 
         ServiceRequest request = getRequest(requestId);
 
-        if (request.getStatus() != RequestStatus.ACCEPTED) {
-            throw new UnauthorizedException("Chat allowed only after request acceptance");
+        if (request.getStatus() != RequestStatus.ACCEPTED && request.getStatus() != RequestStatus.COMPLETED) {
+            throw new UnauthorizedException("Chat allowed only when request is ACCEPTED or COMPLETED");
         }
 
         validateParticipant(request, senderId);
@@ -48,8 +48,7 @@ public class ChatServiceImpl implements ChatService {
         messagingTemplate.convertAndSendToUser(
                 receiverId,
                 "/queue/messages",
-                map(saved)
-        );
+                map(saved));
     }
 
     @Override
@@ -99,7 +98,6 @@ public class ChatServiceImpl implements ChatService {
                 m.getReceiverId(),
                 m.getMessage(),
                 m.isRead(),
-                m.getTimestamp()
-        );
+                m.getTimestamp());
     }
 }

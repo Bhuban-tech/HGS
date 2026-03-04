@@ -2,6 +2,7 @@ package org.example.hamrogharsewa.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.hamrogharsewa.dto.request.BecomeProviderDto;
 import org.example.hamrogharsewa.dto.request.UserRegistrationDto;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;
 import org.example.hamrogharsewa.exception.EmailSendingException;
@@ -165,11 +166,66 @@ public class UserServiceImpl implements UserService {
     @Override
     public java.util.List<UserResponseDto> getProvidersByCategory(String categoryId) {
         return userRepository
-                .findByServiceCategoryIdAndRoleAndActiveTrue(categoryId,
+                .findByServiceCategoryIdAndRoleAndApprovedTrueAndActiveTrue(categoryId,
                         org.example.hamrogharsewa.model.Role.SERVICE_PROVIDER)
                 .stream()
                 .map(this::mapToDto)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public java.util.List<UserResponseDto> getAllProviders() {
+        return userRepository
+                .findByRoleAndApprovedTrueAndActiveTrue(org.example.hamrogharsewa.model.Role.SERVICE_PROVIDER)
+                .stream()
+                .map(this::mapToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional
+    public UserResponseDto becomeProvider(BecomeProviderDto dto) {
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // Upgrade role
+        user.setRole(org.example.hamrogharsewa.model.Role.SERVICE_PROVIDER);
+
+        // Provider-specific fields
+        if (dto.getName() != null)
+            user.setUserName(dto.getName());
+        if (dto.getPhone() != null)
+            user.setPhoneNumber(dto.getPhone());
+        if (dto.getAddress() != null)
+            user.setAddress(dto.getAddress());
+        if (dto.getCategory() != null)
+            user.setServiceCategoryId(dto.getCategory());
+        if (dto.getSkills() != null)
+            user.setDescription(dto.getSkills());
+        if (dto.getCitizenship() != null)
+            user.setCitizenshipNumber(dto.getCitizenship());
+        if (dto.getExperience() != null) {
+            try {
+                user.setExperienceYears(Integer.parseInt(dto.getExperience()));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+
+        // Provider must be approved by admin, so set approved=false but keep
+        // active=true
+        // so they can still login as a regular user while waiting.
+        user.setApproved(false);
+        user.setActive(true);
+
+        return mapToDto(userRepository.save(user));
+    }
+
+    @Override
+    public UserResponseDto getProviderById(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found with id: " + id));
+        return mapToDto(user);
     }
 
     /*
@@ -178,13 +234,6 @@ public class UserServiceImpl implements UserService {
      * =========================
      */
     private UserResponseDto mapToDto(User user) {
-        return new UserResponseDto(
-                user.getId(),
-                user.getUserName(),
-                user.getEmail(),
-                user.getPhoneNumber(),
-                user.getProfile(),
-                user.getRole() != null ? user.getRole().name() : null,
-                user.isActive());
+        return UserResponseDto.from(user);
     }
 }
