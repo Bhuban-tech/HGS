@@ -31,7 +31,7 @@ public class AdminServiceImpl implements AdminService {
     public List<UserResponseDto> getAllProviders() {
         return userRepository.findByRole(Role.SERVICE_PROVIDER)
                 .stream()
-                .map(UserResponseDto::from) // ✅ use from() directly
+                .map(UserResponseDto::from)
                 .collect(Collectors.toList());
     }
 
