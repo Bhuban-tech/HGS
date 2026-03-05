@@ -19,56 +19,51 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+        private final AuthService authService;
 
-    @PostMapping("/register")
-    public ResponseEntity<ApiResponseDto<Void>> register(
-            @Valid @RequestBody UserRegistrationDto dto) {
+        @PostMapping("/register")
+        public ResponseEntity<ApiResponseDto<Void>> register(
+                        @Valid @RequestBody UserRegistrationDto dto) {
 
-        authService.registerAndSendOtp(dto);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(ApiResponseDto.success("OTP sent to email", null));
-    }
+                authService.registerAndSendOtp(dto);
+                return ResponseEntity.status(HttpStatus.OK)
+                                .body(ApiResponseDto.success("OTP sent to email", null));
+        }
 
-    @PostMapping("/register/verify-otp")
-    public ResponseEntity<ApiResponseDto<UserResponseDto>> verifyOtp(
-            @RequestParam String email,
-            @RequestParam String otp) {
+        @PostMapping("/register/verify-otp")
+        public ResponseEntity<ApiResponseDto<LoginResponseDto>> verifyOtp(
+                        @RequestParam String email,
+                        @RequestParam String otp) {
 
-        return ResponseEntity.ok(
-                ApiResponseDto.success(
-                        "Registration completed",
-                        authService.verifyOtpAndSaveUser(email, otp)
-                )
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponseDto.success(
+                                                "Registration completed",
+                                                authService.verifyOtpAndSaveUser(email, otp)));
+        }
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponseDto<LoginResponseDto>> login(
-            @Valid @RequestBody LoginRequestDto request) {
+        @PostMapping("/login")
+        public ResponseEntity<ApiResponseDto<LoginResponseDto>> login(
+                        @Valid @RequestBody LoginRequestDto request) {
 
-        return ResponseEntity.ok(
-                ApiResponseDto.success("Login successful", authService.login(request))
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponseDto.success("Login successful", authService.login(request)));
+        }
 
-    @PostMapping("/logout")
-    public ResponseEntity<ApiResponseDto<Void>> logout(
-            @RequestHeader("Authorization") String token) {
+        @PostMapping("/logout")
+        public ResponseEntity<ApiResponseDto<Void>> logout(
+                        @RequestHeader("Authorization") String token) {
 
-        authService.logout(token);
-        return ResponseEntity.ok(ApiResponseDto.success("Logout successful", null));
-    }
+                authService.logout(token);
+                return ResponseEntity.ok(ApiResponseDto.success("Logout successful", null));
+        }
 
-    @PostMapping("/refresh-token")
-    public ResponseEntity<ApiResponseDto<LoginResponseDto>> refreshToken(
-            @RequestParam String refreshToken) {
+        @PostMapping("/refresh-token")
+        public ResponseEntity<ApiResponseDto<LoginResponseDto>> refreshToken(
+                        @RequestParam String refreshToken) {
 
-        return ResponseEntity.ok(
-                ApiResponseDto.success(
-                        "Token refreshed",
-                        authService.refreshToken(refreshToken)
-                )
-        );
-    }
+                return ResponseEntity.ok(
+                                ApiResponseDto.success(
+                                                "Token refreshed",
+                                                authService.refreshToken(refreshToken)));
+        }
 }

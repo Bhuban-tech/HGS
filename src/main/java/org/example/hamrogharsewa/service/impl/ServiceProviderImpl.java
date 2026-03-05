@@ -1,6 +1,4 @@
-// ✅ CORRECT
 package org.example.hamrogharsewa.service.impl;
-
 
 import lombok.RequiredArgsConstructor;
 import org.example.hamrogharsewa.dto.request.ServiceRequestCreateDto;
@@ -95,13 +93,14 @@ public class ServiceProviderImpl implements ServiceRequestService {
             throw new IllegalStateException("Only pending bookings can be cancelled");
         }
 
-        req.setStatus(RequestStatus.REJECTED);
+        // ✅ FIXED: was REJECTED before, now correctly CANCELLED
+        req.setStatus(RequestStatus.CANCELLED);
         repository.save(req);
     }
 
     @Override
     public void complete(String actorId, String requestId,
-            Collection<? extends GrantedAuthority> authorities) {
+                         Collection<? extends GrantedAuthority> authorities) {
 
         ServiceRequest req = get(requestId);
 

@@ -9,7 +9,7 @@ public interface AuthService {
 
     void registerAndSendOtp(UserRegistrationDto dto);
 
-    UserResponseDto verifyOtpAndSaveUser(String email, String otp);
+    LoginResponseDto verifyOtpAndSaveUser(String email, String otp);
 
     LoginResponseDto login(LoginRequestDto loginRequest);
 

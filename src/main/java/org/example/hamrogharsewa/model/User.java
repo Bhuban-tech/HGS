@@ -54,9 +54,7 @@ public class User {
     @PrePersist
     void onCreate() {
         createdAt = updatedAt = LocalDateTime.now();
-        if (role == Role.USER || role == Role.SUPERADMIN) {
-            approved = true;
-        }
+        // approved defaults to false - requires admin approval
     }
 
     @PreUpdate

@@ -1,6 +1,6 @@
 package org.example.hamrogharsewa.service.interfaces;
 
-import org.example.hamrogharsewa.dto.request.UserRegistrationDto;
+import org.example.hamrogharsewa.dto.request.BecomeProviderDto;
 import org.example.hamrogharsewa.dto.response.UpdateProfileDto;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;
 
@@ -12,6 +12,8 @@ public interface UserService {
 
     UserResponseDto updateUserProfile(UpdateProfileDto updatedInfo);
 
+    UserResponseDto becomeProvider(BecomeProviderDto dto); // ✅ Added
+
     void changePassword(String oldPassword, String newPassword);
 
     void forgotPassword(String email);
@@ -20,10 +22,15 @@ public interface UserService {
 
     void resetPassword(String email, String newPassword);
 
-    java.util.List<UserResponseDto> getProvidersByCategory(String categoryId);
+    List<UserResponseDto> getProvidersByCategory(String categoryId);
+
+    List<UserResponseDto> getAllProviders(); // ✅ Added
+
+    UserResponseDto getProviderById(String id); // ✅ Added
 
     List<UserResponseDto> getAllUsers();
 
     void requestEmailChange(String newEmail);
+
     void confirmEmailChange(String newEmail, String otp);
 }

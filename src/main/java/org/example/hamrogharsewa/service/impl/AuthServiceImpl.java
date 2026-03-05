@@ -62,7 +62,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public UserResponseDto verifyOtpAndSaveUser(String email, String otp) {
+    public LoginResponseDto verifyOtpAndSaveUser(String email, String otp) {
         String savedOtp = otpStore.getOtp(email);
         if (savedOtp == null || !savedOtp.equals(otp)) {
             throw new BadRequestException("Invalid or expired OTP");
@@ -72,20 +72,53 @@ public class AuthServiceImpl implements AuthService {
             String json = otpStore.getRegistrationData(email);
             UserRegistrationDto dto = objectMapper.readValue(json, UserRegistrationDto.class);
 
+            Role assignedRole = Role.USER;
+            if (dto.getRole() != null) {
+                if (dto.getRole().equalsIgnoreCase("PROVIDER") || dto.getRole().equalsIgnoreCase("SERVICE_PROVIDER")) {
+                    assignedRole = Role.SERVICE_PROVIDER;
+                }
+            }
+
+            Integer expYears = null;
+            if (dto.getExperience() != null && !dto.getExperience().trim().isEmpty()) {
+                try {
+                    expYears = Integer.parseInt(dto.getExperience().trim());
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
             User user = User.builder()
                     .userName(dto.getUserName())
                     .email(dto.getEmail())
                     .password(passwordEncoder.encode(dto.getPassword()))
                     .phoneNumber(dto.getPhoneNumber())
-                    .role(Role.USER)
-                    .active(true)
-                    .serviceCategoryId(null)
+                    .role(assignedRole)
+                    .address(dto.getAddress())
+                    .experienceYears(expYears)
+                    .serviceCategoryId(dto.getResolvedCategoryId())
+                    .active(assignedRole == Role.SERVICE_PROVIDER ? false : true)
                     .build();
 
             userRepository.save(user);
             otpStore.invalidateRegistration(email);
 
-            return UserResponseDto.from(user);
+            // Providers don't get token immediately - need admin approval
+            if (assignedRole == Role.SERVICE_PROVIDER) {
+                return new LoginResponseDto(
+                        null, user.getId(), user.getUserName(),
+                        user.getEmail(), user.getRole());
+            }
+
+            // Regular users get token immediately
+            String token = jwtUtil.generateToken(
+                    user.getId(),
+                    user.getEmail(),
+                    user.getUserName(),
+                    user.getRole().name());
+
+            return new LoginResponseDto(
+                    token, user.getId(), user.getUserName(),
+                    user.getEmail(), user.getRole());
 
         } catch (Exception e) {
             throw new RuntimeException("Registration failed", e);
@@ -107,6 +140,11 @@ public class AuthServiceImpl implements AuthService {
 
         if (tokenStore.isUserBlacklisted(user.getId())) {
             throw new UnauthorizedException("User is suspended");
+        }
+
+        // Providers must be approved (active=true) to login
+        if (user.getRole() == Role.SERVICE_PROVIDER && !user.isActive()) {
+            throw new UnauthorizedException("Your provider account is pending admin approval. Please wait for approval before logging in.");
         }
 
         String token = jwtUtil.generateToken(

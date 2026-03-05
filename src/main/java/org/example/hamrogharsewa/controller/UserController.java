@@ -2,6 +2,7 @@ package org.example.hamrogharsewa.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.hamrogharsewa.dto.request.BecomeProviderDto;
 import org.example.hamrogharsewa.dto.request.UserRegistrationDto;
 import org.example.hamrogharsewa.dto.response.ApiResponseDto;
 import org.example.hamrogharsewa.dto.response.UpdateProfileDto;
@@ -20,8 +21,6 @@ public class UserController {
 
     private final UserService userService;
 
-    // --- PROFILE ENDPOINTS ---
-
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDto<UserResponseDto>> getCurrentUser() {
@@ -35,6 +34,14 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success("Profile updated", userService.updateUserProfile(dto)));
     }
 
+    @PatchMapping("/become-provider")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponseDto<UserResponseDto>> becomeProvider(
+            @Valid @RequestBody BecomeProviderDto dto) {
+        return ResponseEntity
+                .ok(ApiResponseDto.success("Provider application submitted", userService.becomeProvider(dto)));
+    }
+
     @PatchMapping("/change-password")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponseDto<Void>> changePassword(
@@ -44,13 +51,24 @@ public class UserController {
         return ResponseEntity.ok(ApiResponseDto.success("Password changed successfully", null));
     }
 
-    // --- BROWSE PROVIDERS ---
-
     @GetMapping("/providers/category/{categoryId}")
     public ResponseEntity<ApiResponseDto<List<UserResponseDto>>> getProvidersByCategory(
             @PathVariable String categoryId) {
         return ResponseEntity
                 .ok(ApiResponseDto.success("Providers fetched", userService.getProvidersByCategory(categoryId)));
+    }
+
+    @GetMapping("/providers")
+    public ResponseEntity<ApiResponseDto<List<UserResponseDto>>> getAllProviders() {
+        return ResponseEntity
+                .ok(ApiResponseDto.success("Providers fetched", userService.getAllProviders()));
+    }
+
+    @GetMapping("/providers/{id}")
+    public ResponseEntity<ApiResponseDto<UserResponseDto>> getProviderById(
+            @PathVariable String id) {
+        return ResponseEntity
+                .ok(ApiResponseDto.success("Provider fetched", userService.getProviderById(id)));
     }
 
     // --- FORGOT PASSWORD (PUBLIC) ---

@@ -2,10 +2,12 @@ package org.example.hamrogharsewa.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.hamrogharsewa.dto.request.BecomeProviderDto;
 import org.example.hamrogharsewa.dto.request.UserRegistrationDto;
 import org.example.hamrogharsewa.dto.response.UpdateProfileDto;
 import org.example.hamrogharsewa.dto.response.UserResponseDto;
 import org.example.hamrogharsewa.exception.*;
+import org.example.hamrogharsewa.model.Role;
 import org.example.hamrogharsewa.model.User;
 import org.example.hamrogharsewa.repository.UserRepository;
 import org.example.hamrogharsewa.service.EmailService;
@@ -52,6 +54,44 @@ public class UserServiceImpl implements UserService {
         }
 
         throw new UnauthorizedException("Invalid authentication principal");
+    }
+    /*
+     * =========================
+     * PROVIDER METHODS
+     * =========================
+     */
+    @Override
+    @Transactional
+    public UserResponseDto becomeProvider(BecomeProviderDto dto) {
+        String userId = getCurrentUserIdFromToken();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        user.setRole(Role.SERVICE_PROVIDER);
+        user.setServiceCategoryId(dto.getCategory());
+        user.setActive(false); // pending approval
+
+        return mapToDto(userRepository.save(user));
+    }
+
+    @Override
+    public List<UserResponseDto> getAllProviders() {
+        return userRepository.findByRole(Role.SERVICE_PROVIDER)
+                .stream()
+                .map(this::mapToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    public UserResponseDto getProviderById(String id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found with id: " + id));
+
+        if (user.getRole() != Role.SERVICE_PROVIDER) {
+            throw new ResourceNotFoundException("No provider found with id: " + id);
+        }
+
+        return mapToDto(user);
     }
 
     @Override
@@ -173,7 +213,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public java.util.List<UserResponseDto> getProvidersByCategory(String categoryId) {
         return userRepository
-                .findByServiceCategoryIdAndRoleAndActiveTrue(categoryId,
+                .findByServiceCategoryIdAndRoleAndApprovedTrueAndActiveTrue(categoryId,
                         org.example.hamrogharsewa.model.Role.SERVICE_PROVIDER)
                 .stream()
                 .map(this::mapToDto)

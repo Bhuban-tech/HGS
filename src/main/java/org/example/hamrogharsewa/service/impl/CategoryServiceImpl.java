@@ -59,7 +59,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .toList();
     }
 
-    // 🔁 DTO Mapper (PRIVATE)
+
     private ServiceCategoryResponseDto mapToDto(ServiceCategory category) {
         return ServiceCategoryResponseDto.builder()
                 .id(category.getId())

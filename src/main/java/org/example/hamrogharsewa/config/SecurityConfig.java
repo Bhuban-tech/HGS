@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/uploads/**", "/ws-chat/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/uploads/**", "/ws-chat/**","/api/categories").permitAll()
                         .requestMatchers("/api/serviceprovider/**").hasRole("SERVICE_PROVIDER")
                         .requestMatchers("/api/superadmin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/api/common/**")
